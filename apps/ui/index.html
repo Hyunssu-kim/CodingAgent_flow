@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design-Aware AI Coding Platform</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <div>
+        <h1>Design-Aware AI Coding Platform</h1>
+        <p class="subtitle">Prompt + Design Memory + MCP Toolchain in one run.</p>
+      </div>
+      <div class="toggle">
+        <label class="switch">
+          <input type="checkbox" id="darkToggle" />
+          <span class="slider"></span>
+        </label>
+        <span class="toggle-label">Dark</span>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="row">
+        <div class="field">
+          <label>Project ID</label>
+          <input id="projectId" list="projectHistory" placeholder="default" />
+          <datalist id="projectHistory"></datalist>
+        </div>
+        <div class="field">
+          <label>Task Type</label>
+          <select id="taskType">
+            <option value="code_generation">code_generation</option>
+            <option value="refactoring">refactoring</option>
+            <option value="code_review">code_review</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>User Input</label>
+        <textarea id="userInput" rows="6" placeholder="Describe the task..."></textarea>
+      </div>
+
+      <div class="actions">
+        <button id="runBtn">Run</button>
+        <div id="loading" class="loading hidden">
+          <span class="spinner"></span>
+          <span>Running...</span>
+        </div>
+      </div>
+
+      <div id="errorBox" class="error hidden"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-header">
+        <h2>Result</h2>
+        <button id="copyAllBtn" class="ghost">Copy All</button>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-header">
+            <h3>LLM Output</h3>
+            <button id="copyCodeBtn" class="ghost">Copy Code</button>
+          </div>
+          <pre id="llmOutput" class="code-block"></pre>
+        </div>
+        <div class="card">
+          <h3>Memory Snapshot</h3>
+          <div id="memorySnapshot" class="text-block"></div>
+        </div>
+        <div class="card">
+          <h3>Retrieved Context</h3>
+          <ol id="retrievedContext" class="context-list"></ol>
+        </div>
+        <div class="card">
+          <h3>Quality Report</h3>
+          <div id="qualityReport" class="report-grid"></div>
+        </div>
+      </div>
+      <details class="raw">
+        <summary>Raw JSON</summary>
+        <pre id="result"></pre>
+      </details>
+    </section>
+
+    <section class="panel">
+      <div class="section-header">
+        <h2>Request History</h2>
+        <button id="clearHistoryBtn" class="ghost">Clear</button>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

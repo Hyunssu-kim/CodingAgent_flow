@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pydantic==1.10.15
+ruff
+pytest
+coverage
+python-dotenv
