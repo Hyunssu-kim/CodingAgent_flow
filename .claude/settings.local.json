@@ -5,7 +5,8 @@
       "Bash(tree:*)",
       "Bash(cat:*)",
       "Bash(pip3 list:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
