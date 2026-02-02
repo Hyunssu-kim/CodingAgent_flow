@@ -28,6 +28,7 @@ def run_lint(payload: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     code = str(payload.get("code", ""))
+    tests = str(payload.get("tests", ""))
     if not code.strip():
         return {
             "status": "error",
@@ -35,20 +36,40 @@ def run_lint(payload: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        file_path = f"{tmpdir}/generated.py"
-        with open(file_path, "w", encoding="utf-8") as f:
+        code_path = f"{tmpdir}/app.py"
+        with open(code_path, "w", encoding="utf-8") as f:
             f.write(code)
+        test_path = None
+        if tests.strip():
+            test_path = f"{tmpdir}/test_generated.py"
+            with open(test_path, "w", encoding="utf-8") as f:
+                f.write(tests)
 
         args = [
             sys.executable,
             "-m",
             "ruff",
             "check",
-            "--format",
+            "--output-format",
             "json",
-            file_path,
+            code_path,
         ]
+        if test_path:
+            args.append(test_path)
         proc = _run_cmd(args, tmpdir)
+        if proc.returncode != 0 and "unexpected argument '--output-format'" in proc.stderr:
+            args = [
+                sys.executable,
+                "-m",
+                "ruff",
+                "check",
+                "--format",
+                "json",
+                code_path,
+            ]
+            if test_path:
+                args.append(test_path)
+            proc = _run_cmd(args, tmpdir)
 
         violations: List[Dict[str, Any]] = []
         stdout = proc.stdout.strip()

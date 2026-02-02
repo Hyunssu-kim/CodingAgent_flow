@@ -49,16 +49,26 @@ def run_test(payload: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     code = str(payload.get("code", ""))
+    tests = str(payload.get("tests", ""))
     if not code.strip():
         return {
             "status": "error",
             "detail": {"message": "empty code payload"},
         }
+    if not tests.strip():
+        return {
+            "status": "skipped",
+            "detail": {"message": "no tests provided"},
+        }
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        file_path = f"{tmpdir}/test_generated.py"
-        with open(file_path, "w", encoding="utf-8") as f:
+        code_path = f"{tmpdir}/app.py"
+        test_path = f"{tmpdir}/test_generated.py"
+        with open(code_path, "w", encoding="utf-8") as f:
             f.write(code)
+        with open(test_path, "w", encoding="utf-8") as f:
+            f.write("from app import *\n")
+            f.write(tests)
 
         args = [
             sys.executable,
@@ -66,12 +76,16 @@ def run_test(payload: Dict[str, Any]) -> Dict[str, Any]:
             "pytest",
             "-q",
             "--disable-warnings",
-            file_path,
+            test_path,
         ]
         proc = _run_cmd(args, tmpdir)
-        summary = _parse_pytest_summary(proc.stdout + "\n" + proc.stderr)
+        combined = proc.stdout + "\n" + proc.stderr
+        summary = _parse_pytest_summary(combined)
 
-        status = "passed" if proc.returncode == 0 else "failed"
+        if "no tests ran" in combined.lower() or "no tests collected" in combined.lower():
+            status = "skipped"
+        else:
+            status = "passed" if proc.returncode == 0 else "failed"
         return {
             "status": status,
             "detail": {

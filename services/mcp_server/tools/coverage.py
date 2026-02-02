@@ -55,17 +55,28 @@ def run_coverage(payload: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     code = str(payload.get("code", ""))
+    tests = str(payload.get("tests", ""))
     if not code.strip():
         return {
             "status": "error",
             "detail": {"message": "empty code payload"},
         }
+    if not tests.strip():
+        return {
+            "status": "skipped",
+            "detail": {"message": "no tests provided"},
+        }
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        file_name = "test_generated.py"
-        file_path = f"{tmpdir}/{file_name}"
-        with open(file_path, "w", encoding="utf-8") as f:
+        code_name = "app.py"
+        test_name = "test_generated.py"
+        code_path = f"{tmpdir}/{code_name}"
+        test_path = f"{tmpdir}/{test_name}"
+        with open(code_path, "w", encoding="utf-8") as f:
             f.write(code)
+        with open(test_path, "w", encoding="utf-8") as f:
+            f.write("from app import *\n")
+            f.write(tests)
 
         run_args = [
             sys.executable,
@@ -76,15 +87,19 @@ def run_coverage(payload: Dict[str, Any]) -> Dict[str, Any]:
             "pytest",
             "-q",
             "--disable-warnings",
-            file_path,
+            test_path,
         ]
         run_proc = _run_cmd(run_args, tmpdir)
 
         report_args = [sys.executable, "-m", "coverage", "report", "-m"]
         report_proc = _run_cmd(report_args, tmpdir)
-        parsed = _parse_coverage_report(report_proc.stdout, file_name)
+        parsed = _parse_coverage_report(report_proc.stdout, code_name)
 
-        status = "ok" if run_proc.returncode == 0 else "failed"
+        combined = (run_proc.stdout + "\n" + run_proc.stderr).lower()
+        if "no tests ran" in combined or "no tests collected" in combined or "no data to report" in report_proc.stdout.lower():
+            status = "skipped"
+        else:
+            status = "ok" if run_proc.returncode == 0 else "failed"
         return {
             "status": status,
             "detail": {

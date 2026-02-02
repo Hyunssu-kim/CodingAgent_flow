@@ -48,8 +48,19 @@ class AgentLoop:
         )
 
     def _run_quality_tools(self, code: str) -> QualityReport:
-        payload = {"code": code}
+        extracted_code, extracted_tests = self._extract_code_blocks(code)
+        payload = {"code": extracted_code, "tests": extracted_tests}
         lint = self.mcp_client.run_tool("lint", payload)
         test = self.mcp_client.run_tool("test", payload)
         coverage = self.mcp_client.run_tool("coverage", payload)
         return QualityReport(lint=lint, test=test, coverage=coverage)
+
+    def _extract_code_blocks(self, text: str) -> tuple[str, str]:
+        import re
+
+        blocks = re.findall(r"```(?:python)?\s*(.*?)```", text, re.DOTALL)
+        if not blocks:
+            return text, ""
+        code = blocks[0].strip()
+        tests = blocks[1].strip() if len(blocks) > 1 else ""
+        return code, tests

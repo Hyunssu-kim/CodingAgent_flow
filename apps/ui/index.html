@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,87 +10,108 @@
   <main class="container">
     <header class="hero">
       <div>
-        <h1>Design-Aware AI Coding Platform</h1>
-        <p class="subtitle">Prompt + Design Memory + MCP Toolchain in one run.</p>
+        <h1>🤖 Design-Aware AI Coding Platform</h1>
+        <p class="subtitle">설계 문서 기반 AI 코드 생성 + 자동 품질 검사</p>
       </div>
       <div class="toggle">
         <label class="switch">
           <input type="checkbox" id="darkToggle" />
           <span class="slider"></span>
         </label>
-        <span class="toggle-label">Dark</span>
+        <span class="toggle-label">다크 모드</span>
       </div>
     </header>
 
+    <!-- 입력 섹션 -->
     <section class="panel">
       <div class="row">
         <div class="field">
-          <label>Project ID</label>
+          <label>프로젝트 ID</label>
           <input id="projectId" list="projectHistory" placeholder="default" />
           <datalist id="projectHistory"></datalist>
         </div>
         <div class="field">
-          <label>Task Type</label>
+          <label>작업 유형</label>
           <select id="taskType">
-            <option value="code_generation">code_generation</option>
-            <option value="refactoring">refactoring</option>
-            <option value="code_review">code_review</option>
+            <option value="code_generation">코드 생성 (Code Generation)</option>
+            <option value="refactoring">리팩토링 (Refactoring)</option>
+            <option value="code_review">코드 리뷰 (Code Review)</option>
           </select>
         </div>
       </div>
 
       <div class="field">
-        <label>User Input</label>
-        <textarea id="userInput" rows="6" placeholder="Describe the task..."></textarea>
+        <label>요청 사항</label>
+        <textarea id="userInput" rows="6" placeholder="예: 파일을 안전하게 읽는 함수를 만들어주세요"></textarea>
       </div>
 
       <div class="actions">
-        <button id="runBtn">Run</button>
+        <button id="runBtn">🚀 실행</button>
         <div id="loading" class="loading hidden">
           <span class="spinner"></span>
-          <span>Running...</span>
+          <span>AI가 작업 중입니다...</span>
         </div>
       </div>
 
       <div id="errorBox" class="error hidden"></div>
     </section>
 
+    <!-- 결과 섹션 -->
     <section class="panel">
       <div class="section-header">
-        <h2>Result</h2>
-        <button id="copyAllBtn" class="ghost">Copy All</button>
+        <h2>📊 실행 결과</h2>
+        <button id="copyAllBtn" class="ghost">전체 복사</button>
       </div>
       <div class="grid">
+        <!-- LLM 출력 -->
         <div class="card">
           <div class="card-header">
-            <h3>LLM Output</h3>
-            <button id="copyCodeBtn" class="ghost">Copy Code</button>
+            <h3>AI 생성 코드</h3>
+            <button id="copyCodeBtn" class="ghost">복사</button>
           </div>
           <pre id="llmOutput" class="code-block"></pre>
         </div>
+
+        <!-- 테스트 코드 -->
         <div class="card">
-          <h3>Memory Snapshot</h3>
+          <div class="card-header">
+            <h3>테스트 코드</h3>
+            <button id="copyTestBtn" class="ghost">복사</button>
+          </div>
+          <pre id="testOutput" class="code-block"></pre>
+        </div>
+
+        <!-- 메모리 스냅샷 -->
+        <div class="card">
+          <h3>설계 컨텍스트</h3>
           <div id="memorySnapshot" class="text-block"></div>
         </div>
+
+        <!-- 검색된 문서 -->
         <div class="card">
-          <h3>Retrieved Context</h3>
+          <h3>참조 문서</h3>
           <ol id="retrievedContext" class="context-list"></ol>
         </div>
+
+        <!-- 품질 리포트 -->
         <div class="card">
-          <h3>Quality Report</h3>
+          <h3>품질 검사</h3>
           <div id="qualityReport" class="report-grid"></div>
         </div>
       </div>
+
+      <!-- Raw JSON (접힌 상태) -->
       <details class="raw">
-        <summary>Raw JSON</summary>
+        <summary>📄 상세 JSON 응답 보기</summary>
         <pre id="result"></pre>
       </details>
     </section>
 
+    <!-- 히스토리 섹션 -->
     <section class="panel">
       <div class="section-header">
-        <h2>Request History</h2>
-        <button id="clearHistoryBtn" class="ghost">Clear</button>
+        <h2>📜 실행 기록</h2>
+        <button id="clearHistoryBtn" class="ghost">기록 삭제</button>
       </div>
       <div id="historyList" class="history-list"></div>
     </section>

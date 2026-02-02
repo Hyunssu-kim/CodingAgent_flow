@@ -6,7 +6,10 @@
       "Bash(cat:*)",
       "Bash(pip3 list:*)",
       "Bash(find:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(source:*)",
+      "Bash(python -m pytest tests/ -v)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

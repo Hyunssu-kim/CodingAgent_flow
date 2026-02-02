@@ -34,9 +34,11 @@ class Settings(BaseSettings):
     # Vector DB
     vector_db_path: str = Field(default="./data/vectordb")
 
-    # LLM (stub settings)
-    llm_model: str = Field(default="gpt-4")
+    # LLM
+    llm_provider: Literal["gemini", "stub"] = Field(default="gemini")
+    llm_model: str = Field(default="gemini-2.5-flash")
     llm_temperature: float = Field(default=0.7, ge=0.0, le=1.0)
+    llm_api_key: str | None = Field(default=None, env="LLM_API_KEY")
 
     @validator("app_env")
     def _validate_env(cls, v: str) -> str:
