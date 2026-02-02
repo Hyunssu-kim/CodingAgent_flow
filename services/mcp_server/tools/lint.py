@@ -5,6 +5,8 @@ import importlib.util
 from typing import Any, Dict, List
 import subprocess
 
+from .testgen import generate_pytest_from_cases
+
 
 def _module_available(name: str) -> bool:
     return importlib.util.find_spec(name) is not None
@@ -40,10 +42,13 @@ def run_lint(payload: Dict[str, Any]) -> Dict[str, Any]:
         with open(code_path, "w", encoding="utf-8") as f:
             f.write(code)
         test_path = None
+        test_err = None
         if tests.strip():
-            test_path = f"{tmpdir}/test_generated.py"
-            with open(test_path, "w", encoding="utf-8") as f:
-                f.write(tests)
+            test_code, test_err = generate_pytest_from_cases(tests)
+            if test_code.strip():
+                test_path = f"{tmpdir}/test_generated.py"
+                with open(test_path, "w", encoding="utf-8") as f:
+                    f.write(test_code)
 
         args = [
             sys.executable,
@@ -99,12 +104,15 @@ def run_lint(payload: Dict[str, Any]) -> Dict[str, Any]:
                 }
 
         status = "ok" if proc.returncode == 0 else "violations"
+        detail = {
+            "count": len(violations),
+            "violations": violations,
+            "stdout": proc.stdout,
+            "stderr": proc.stderr,
+        }
+        if test_err:
+            detail["test_generation_error"] = test_err
         return {
             "status": status,
-            "detail": {
-                "count": len(violations),
-                "violations": violations,
-                "stdout": proc.stdout,
-                "stderr": proc.stderr,
-            },
+            "detail": detail,
         }

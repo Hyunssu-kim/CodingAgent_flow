@@ -58,7 +58,7 @@ class AgentLoop:
     def _extract_code_blocks(self, text: str) -> tuple[str, str]:
         import re
 
-        blocks = re.findall(r"```(?:python)?\s*(.*?)```", text, re.DOTALL)
+        blocks = re.findall(r"```(?:[a-zA-Z]+)?\s*(.*?)```", text, re.DOTALL)
         if not blocks:
             return text, ""
         code = blocks[0].strip()

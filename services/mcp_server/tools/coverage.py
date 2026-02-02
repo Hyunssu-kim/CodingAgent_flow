@@ -5,6 +5,8 @@ import importlib.util
 from typing import Any, Dict, List, Optional
 import subprocess
 
+from .testgen import generate_pytest_from_cases
+
 
 def _module_available(name: str) -> bool:
     return importlib.util.find_spec(name) is not None
@@ -74,9 +76,13 @@ def run_coverage(payload: Dict[str, Any]) -> Dict[str, Any]:
         test_path = f"{tmpdir}/{test_name}"
         with open(code_path, "w", encoding="utf-8") as f:
             f.write(code)
+        test_code, test_err = generate_pytest_from_cases(tests)
+        if test_err:
+            return {"status": "error", "detail": {"message": test_err}}
+        if not test_code.strip():
+            return {"status": "skipped", "detail": {"message": "no test cases generated"}}
         with open(test_path, "w", encoding="utf-8") as f:
-            f.write("from app import *\n")
-            f.write(tests)
+            f.write(test_code)
 
         run_args = [
             sys.executable,

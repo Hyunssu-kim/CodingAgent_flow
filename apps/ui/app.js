@@ -31,7 +31,7 @@ function setError(message) {
 
 function clearResult() {
   llmOutput.textContent = "결과가 여기에 표시됩니다.";
-  testOutput.textContent = "테스트 코드가 여기에 표시됩니다.";
+  testOutput.textContent = "테스트 케이스가 여기에 표시됩니다.";
   memorySnapshot.textContent = "설계 컨텍스트가 여기에 표시됩니다.";
   retrievedContext.innerHTML = "<li>검색된 문서가 여기에 표시됩니다.</li>";
   qualityReport.innerHTML = "<p style='color: var(--text-secondary); font-size: 14px;'>품질 검사 결과가 여기에 표시됩니다.</p>";
@@ -194,7 +194,7 @@ function escapeHtml(text) {
 
 function extractCodeBlocks(text) {
   const blocks = [];
-  const fence = /```(?:python)?([\s\S]*?)```/g;
+  const fence = /```(?:[a-zA-Z]+)?([\s\S]*?)```/g;
   let match;
   while ((match = fence.exec(text)) !== null) {
     blocks.push(match[1].trim());
@@ -205,20 +205,20 @@ function extractCodeBlocks(text) {
 function renderCodeBlocks(text) {
   if (!text) {
     llmOutput.textContent = "(AI 응답이 없습니다)";
-    testOutput.textContent = "(테스트 코드가 없습니다)";
+    testOutput.textContent = "(테스트 케이스가 없습니다)";
     return;
   }
   const blocks = extractCodeBlocks(text);
   if (blocks.length === 0) {
     llmOutput.textContent = text;
-    testOutput.textContent = "(테스트 코드가 없습니다)";
+    testOutput.textContent = "(테스트 케이스가 없습니다)";
     return;
   }
   llmOutput.innerHTML = `<code>${highlightPython(blocks[0])}</code>`;
   if (blocks[1]) {
     testOutput.innerHTML = `<code>${highlightPython(blocks[1])}</code>`;
   } else {
-    testOutput.textContent = "(테스트 코드가 없습니다)";
+    testOutput.textContent = "(테스트 케이스가 없습니다)";
   }
 }
 
@@ -325,7 +325,7 @@ copyTestBtn.addEventListener("click", async () => {
   try {
     const text = testOutput.textContent || "";
     await navigator.clipboard.writeText(text);
-    alert("✓ 테스트 코드가 복사되었습니다.");
+    alert("✓ 테스트 케이스가 복사되었습니다.");
   } catch (err) {
     setError(`복사 실패: ${err}`);
   }
