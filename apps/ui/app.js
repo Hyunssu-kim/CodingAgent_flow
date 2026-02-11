@@ -60,7 +60,7 @@ async function fetchJson(path, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
     const res = await fetch(path, { ...options, signal: controller.signal });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(data.detail || `HTTP ${res.status}`);
+      throw new Error(data.detail || `HTTP ${res.status} 오류`);
     }
     return data;
   } finally {
@@ -85,10 +85,10 @@ function renderContext(items) {
 }
 
 function getStatusIcon(status) {
-  if (status === "ok" || status === "passed") return "OK";
-  if (status === "error" || status === "failed") return "ERR";
-  if (status === "violations") return "WARN";
-  return "SKIP";
+  if (status === "ok" || status === "passed") return "정상";
+  if (status === "error" || status === "failed") return "오류";
+  if (status === "violations") return "경고";
+  return "건너뜀";
 }
 
 function getStatusText(status) {
@@ -98,7 +98,7 @@ function getStatusText(status) {
     error: "오류",
     failed: "실패",
     violations: "경고",
-    skipped: "스킵",
+    skipped: "건너뜀",
     unknown: "미확인",
   };
   return mapping[status] || status;
@@ -128,9 +128,9 @@ function formatDetail(tool, detail) {
 function renderQuality(report) {
   qualityReport.innerHTML = "";
   const tools = [
-    { key: "lint", label: "Lint" },
-    { key: "test", label: "Tests" },
-    { key: "coverage", label: "Coverage" },
+    { key: "lint", label: "린트" },
+    { key: "test", label: "테스트" },
+    { key: "coverage", label: "커버리지" },
   ];
 
   tools.forEach(({ key, label }) => {
