@@ -1,16 +1,16 @@
-﻿# Design-Aware AI Coding Platform (MVP)
+﻿# 설계 인지형 AI 코딩 플랫폼 (MVP)
 
-A lightweight AI coding platform that keeps design documents in context (RAG), runs quality tools via an MCP Tool Server, and provides an operations dashboard for prompts, memory, and run history.
+설계 문서를 컨텍스트(RAG)로 유지하고, MCP Tool Server로 품질 도구를 실행하며, 프롬프트/메모리/실행 기록을 운영 UI에서 확인할 수 있는 경량 AI 코딩 플랫폼입니다.
 
-## What Works Today
-- FastAPI orchestrator with `/run`, `/runs`, `/prompts`, and `/memory` APIs
-- RAG over local design docs (`docs/ARCHITECTURE.md`, `docs/CODING_RULES.md`, `docs/API_CONTRACT.md`)
-- Memory snapshots persisted to JSON (`data/memory/*.json`)
-- MCP Tool Server for lint/test/coverage (ruff/pytest/coverage)
-- Run history persisted to JSON (`data/run_store.json`) with stats endpoints
-- Minimal UI for running tasks and viewing ops telemetry
+## 현재 동작하는 기능
+- FastAPI 오케스트레이터(`/run`, `/runs`, `/prompts`, `/memory` API)
+- 로컬 설계 문서 RAG (`docs/ARCHITECTURE.md`, `docs/CODING_RULES.md`, `docs/API_CONTRACT.md`)
+- 메모리 스냅샷 JSON 저장 (`data/memory/*.json`)
+- MCP Tool Server 기반 lint/test/coverage (ruff/pytest/coverage)
+- 실행 기록 JSON 저장 (`data/run_store.json`) + 통계 엔드포인트
+- 작업 실행 및 운영 지표를 보여주는 최소 UI
 
-## Architecture
+## 아키텍처
 ```
 +-------------------+       +------------------------+
 |       UI          |       |   MCP Tool Server      |
@@ -35,24 +35,24 @@ A lightweight AI coding platform that keeps design documents in context (RAG), r
 +-------------------+
 ```
 
-## Quickstart
-### 1) Create venv
+## 빠른 시작
+### 1) 가상환경 생성
 ```
 python -m venv .venv
 ```
 
-### 2) Install dependencies
+### 2) 의존성 설치
 ```
 .\.venv\Scripts\python -m pip install -r requirements.txt
 ```
 
-### 3) Configure env
+### 3) 환경 변수 설정
 ```
 copy .env.example .env
 ```
 
-### 4) Run services (two terminals)
-Orchestrator
+### 4) 서비스 실행 (터미널 2개)
+오케스트레이터
 ```
 .\.venv\Scripts\python -m uvicorn apps.orchestrator.main:app --reload --port 8080
 ```
@@ -62,13 +62,13 @@ MCP Tool Server
 .\.venv\Scripts\python -m uvicorn services.mcp_server.server:app --reload --port 8090
 ```
 
-### 5) Open UI
+### 5) UI 접속
 `http://localhost:8080/ui`
 
-## Configuration Notes
-- Default `.env` uses `LLM_PROVIDER=stub`, which echoes the prompt for offline demos.
-- To call Gemini, set `LLM_PROVIDER=gemini` and `LLM_API_KEY=...`.
-- MCP tools require `ruff`, `pytest`, and `coverage` installed (already in `requirements.txt`).
+## 설정 메모
+- 기본 `.env`는 `LLM_PROVIDER=stub`이며 프롬프트를 그대로 에코합니다(오프라인 데모용).
+- Gemini 호출 시 `LLM_PROVIDER=gemini`와 `LLM_API_KEY=...`가 필요합니다.
+- MCP 도구는 `ruff`, `pytest`, `coverage`가 필요합니다(이미 `requirements.txt`에 포함).
 
 ## API
 ### POST /run
@@ -98,68 +98,68 @@ Response (sample)
 ```
 
 ### GET /runs
-List recent runs. Optional `project_id`, `limit`.
+최근 실행 목록. `project_id`, `limit` 옵션 사용 가능.
 
 ### GET /runs/{run_id}
-Retrieve a single run record.
+단일 실행 기록 조회.
 
 ### DELETE /runs/{run_id}
-Delete a run record.
+단일 실행 기록 삭제.
 
 ### GET /runs/stats
-Aggregate stats (count by task type, latest run time).
+실행 통계(작업 유형별 카운트, 최근 실행 시간).
 
 ### GET /prompts
-List prompt templates.
+프롬프트 템플릿 목록.
 
 ### POST /prompts
-Create a new prompt template.
+프롬프트 템플릿 생성.
 
 ### GET /memory
-Fetch memory snapshot for a project.
+프로젝트 메모리 스냅샷 조회.
 
 ### POST /memory/refresh
-Placeholder. Returns an updated snapshot but does not re-ingest docs yet.
+Placeholder. 스냅샷은 갱신하지만 문서 재-인덱싱은 아직 미구현.
 
 ### GET /memory/{project_id}/history
-Fetch memory history.
+메모리 히스토리 조회.
 
 ### DELETE /memory/{project_id}
-Delete stored memory for a project.
+프로젝트 메모리 삭제.
 
 ### GET /memory/stats
-Memory usage statistics.
+메모리 통계.
 
 ## UI
-- Run console: submit tasks and view LLM output, retrieved context, memory snapshot, quality report
-- Ops dashboard: run history, prompt registry, memory stats
+- 실행 콘솔: 작업 요청, LLM 출력, 검색 컨텍스트, 메모리 스냅샷, 품질 리포트 확인
+- 운영 대시보드: 실행 히스토리, 프롬프트 레지스트리, 메모리 통계
 
-## Demo Assets
-- Demo guide: `docs/DEMO.md`
-- Example payloads: `examples/demo_requests.json`
-- PowerShell demo runner: `scripts/demo_requests.ps1`
+## 데모 자료
+- 데모 가이드: `docs/DEMO.md`
+- 예제 요청: `examples/demo_requests.json`
+- PowerShell 데모 러너: `scripts/demo_requests.ps1`
 
-## Implementation Notes (Current Behavior)
-- RAG uses a deterministic hash-based embedding (placeholder), stored in `data/vectordb/vector_db.json`.
-- Design docs are ingested on startup; `/memory/refresh` does not re-ingest yet.
-- The agent extracts the first fenced code block as code and the second as test cases.
-- MCP tools convert JSON test cases to pytest (see `services/mcp_server/tools/testgen.py`).
-- Prompt registry is in-memory; new prompts are lost on restart.
+## 구현 메모 (현재 동작 기준)
+- RAG는 해시 기반 임베딩(placeholder)을 사용하며 `data/vectordb/vector_db.json`에 저장됩니다.
+- 설계 문서는 앱 시작 시 인덱싱되며 `/memory/refresh`는 아직 재-인덱싱하지 않습니다.
+- 에이전트는 첫 번째 코드 블록을 코드로, 두 번째 블록을 테스트 케이스로 사용합니다.
+- MCP 도구는 JSON 테스트 케이스를 pytest 코드로 변환합니다(`services/mcp_server/tools/testgen.py`).
+- 프롬프트 레지스트리는 메모리 기반이며 재시작 시 초기화됩니다.
 
-## Project Structure
+## 프로젝트 구조
 ```
 apps/
-  orchestrator/   # FastAPI orchestrator
-  ui/             # management UI
+  orchestrator/   # FastAPI 오케스트레이터
+  ui/             # 관리 UI
 services/
   mcp_server/     # MCP Tool Server
-scripts/          # demo helpers
-examples/         # sample scenarios
-docs/             # design documents
+scripts/          # 데모 헬퍼
+examples/         # 샘플 시나리오
+docs/             # 설계 문서
 ```
 
-## Roadmap
-- Vector store integration (FAISS/Chroma)
-- Auth + multi-tenant project isolation
-- MCP tool sandboxing
-- IDE extensions (VS Code / IntelliJ)
+## 로드맵
+- 벡터 스토어 통합 (FAISS/Chroma)
+- 인증 + 멀티 테넌시 프로젝트 분리
+- MCP 도구 샌드박싱
+- IDE 확장 (VS Code / IntelliJ)
