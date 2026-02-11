@@ -6,6 +6,7 @@ The system provides a Design-Aware AI Coding Platform that keeps project design 
 Key responsibilities:
 - **FastAPI Orchestrator**: prompt registry, RAG retriever, memory snapshot updates, agent loop, LLM gateway, MCP client.
 - **MCP Tool Server**: lint/test/coverage execution in an isolated service.
+- **Run Store**: persists run history and exposes ops stats.
 - **UI**: minimal run console for submitting tasks and viewing outputs.
 
 ## Component Diagram (ASCII)
@@ -39,7 +40,8 @@ Key responsibilities:
 4) **Prompt Assembly** combines role/constraints/schema + memory + context.
 5) **LLM Call** generates candidate output.
 6) **MCP Tools** run lint/test/coverage on generated code and return JSON.
-7) **Response** returns LLM output + memory snapshot + retrieved context + quality report.
+7) **Run Store** persists the run metadata for ops visibility.
+8) **Response** returns LLM output + memory snapshot + retrieved context + quality report.
 
 ## Technology Stack
 - **Backend**: Python 3.11+, FastAPI

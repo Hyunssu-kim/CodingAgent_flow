@@ -6,14 +6,16 @@ from .llm_gateway import LLMGateway
 from .mcp_client import MCPClient
 from .agent_loop import AgentLoop
 from ..storage.vector_db import VectorDB
+from ..storage.run_store import RunStore
 from ..config import settings
 
-vector_db = VectorDB()
+vector_db = VectorDB(settings.vector_db_path)
 prompt_registry = PromptRegistry()
 rag_retriever = RAGRetriever(vector_db)
-memory_manager = MemoryManager()
+memory_manager = MemoryManager(top_k=settings.top_k)
 llm_gateway = LLMGateway()
 mcp_client = MCPClient(settings.mcp_server_url, timeout_s=settings.mcp_timeout_s)
+run_store = RunStore(path=settings.run_store_path, limit=settings.run_store_limit)
 agent_loop = AgentLoop(
     prompt_registry, rag_retriever, memory_manager, llm_gateway, mcp_client
 )

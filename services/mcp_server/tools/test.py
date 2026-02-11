@@ -23,6 +23,7 @@ def _run_cmd(args: List[str], cwd: str) -> subprocess.CompletedProcess:
 
 
 def _parse_pytest_summary(output: str) -> Dict[str, Any]:
+    output = _strip_ansi(output)
     summary = {
         "passed": 0,
         "failed": 0,
@@ -32,15 +33,19 @@ def _parse_pytest_summary(output: str) -> Dict[str, Any]:
         "duration_s": None,
     }
     # Look for line like: "1 failed, 2 passed, 1 skipped in 0.12s"
-    match = re.search(r"in\\s+([0-9.]+)s", output)
+    match = re.search(r"in\s+([0-9.]+)s", output)
     if match:
         summary["duration_s"] = float(match.group(1))
 
     for key in ["passed", "failed", "skipped", "xfailed", "xpassed"]:
-        m = re.search(rf"(\\d+)\\s+{key}", output)
+        m = re.search(rf"(\d+)\s+{key}", output)
         if m:
             summary[key] = int(m.group(1))
     return summary
+
+
+def _strip_ansi(text: str) -> str:
+    return re.sub(r"\x1b\[[0-9;]*m", "", text or "")
 
 
 def run_test(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -57,24 +62,23 @@ def run_test(payload: Dict[str, Any]) -> Dict[str, Any]:
             "status": "error",
             "detail": {"message": "empty code payload"},
         }
-    if not tests.strip():
-        return {
-            "status": "skipped",
-            "detail": {"message": "no tests provided"},
-        }
-
     with tempfile.TemporaryDirectory() as tmpdir:
         code_path = f"{tmpdir}/app.py"
-        test_path = f"{tmpdir}/test_generated.py"
         with open(code_path, "w", encoding="utf-8") as f:
             f.write(code)
-        test_code, test_err = generate_pytest_from_cases(tests)
-        if test_err:
-            return {"status": "error", "detail": {"message": test_err}}
-        if not test_code.strip():
-            return {"status": "skipped", "detail": {"message": "no test cases generated"}}
-        with open(test_path, "w", encoding="utf-8") as f:
-            f.write(test_code)
+        if tests.strip():
+            test_path = f"{tmpdir}/test_generated.py"
+            test_code, test_err = generate_pytest_from_cases(tests)
+            if test_err:
+                return {"status": "error", "detail": {"message": test_err}}
+            if not test_code.strip():
+                return {"status": "skipped", "detail": {"message": "no test cases generated"}}
+            with open(test_path, "w", encoding="utf-8") as f:
+                f.write(test_code)
+        else:
+            # Fall back to running pytest on the provided code file.
+            # This enables execution when tests are embedded in the code payload.
+            test_path = code_path
 
         args = [
             sys.executable,

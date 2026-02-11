@@ -25,7 +25,9 @@ Run the full agent loop.
     "lint": { "status": "ok|violations|error", "detail": {"count": 0, "violations": []} },
     "test": { "status": "passed|failed|error", "detail": {"summary": {"passed":0}} },
     "coverage": { "status": "ok|failed|error", "detail": {"coverage_percent": 0.0, "missing_lines": []} }
-  }
+  },
+  "run_id": "string",
+  "duration_ms": 123
 }
 ```
 
@@ -87,7 +89,18 @@ Fetch latest memory snapshot.
 {
   "project_id": "string",
   "summary": "string",
-  "updated_at": "2026-01-30T12:00:00Z"
+  "updated_at": "2026-01-30T12:00:00Z",
+  "top_contexts": [
+    {
+      "id": "string",
+      "content": "string",
+      "source": "string",
+      "first_seen": "2026-01-30T12:00:00Z",
+      "last_seen": "2026-01-30T12:00:00Z",
+      "frequency": 1,
+      "importance": 0.8
+    }
+  ]
 }
 ```
 
@@ -102,7 +115,54 @@ Refresh memory (re-ingest docs).
 {
   "project_id": "string",
   "summary": "string",
-  "updated_at": "2026-01-30T12:00:00Z"
+  "updated_at": "2026-01-30T12:00:00Z",
+  "top_contexts": []
+}
+```
+
+---
+
+### GET /runs
+List recent runs.
+
+**Query**
+- project_id: string (optional)
+- limit: int (optional, default: 20)
+
+**Response JSON**
+```
+[
+  {
+    "id": "string",
+    "task_type": "code_generation|refactoring|code_review",
+    "project_id": "string",
+    "user_input": "string",
+    "llm_output": "string",
+    "memory_snapshot": "string",
+    "retrieved_context": ["string"],
+    "quality_report": {},
+    "created_at": "2026-01-30T12:00:00Z",
+    "duration_ms": 123
+  }
+]
+```
+
+### GET /runs/{run_id}
+Get a single run record.
+
+### DELETE /runs/{run_id}
+Delete a run record.
+
+### GET /runs/stats
+Run statistics by task type.
+
+**Response JSON**
+```
+{
+  "total_runs": 10,
+  "project_count": 2,
+  "task_type_counts": {"code_generation": 7},
+  "latest_run_at": "2026-01-30T12:00:00Z"
 }
 ```
 
@@ -117,7 +177,8 @@ Run Ruff linting.
 ```
 {
   "payload": {
-    "code": "string"
+    "code": "string",
+    "tests": "string (optional, JSON test cases or pytest code)"
   }
 }
 ```
@@ -149,7 +210,8 @@ Run pytest.
 ```
 {
   "payload": {
-    "code": "string"
+    "code": "string",
+    "tests": "string (optional, JSON test cases or pytest code)"
   }
 }
 ```
@@ -178,7 +240,8 @@ Run coverage.
 ```
 {
   "payload": {
-    "code": "string"
+    "code": "string",
+    "tests": "string (optional, JSON test cases or pytest code)"
   }
 }
 ```

@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 
@@ -17,7 +17,7 @@ class MemorySnapshot(BaseModel):
     project_id: str
     summary: str
     updated_at: datetime
-    top_contexts: List[MemoryContext] = []
+    top_contexts: List[MemoryContext] = Field(default_factory=list)
 
 
 class MemoryHistoryItem(BaseModel):

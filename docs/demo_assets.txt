@@ -1,0 +1,5 @@
+﻿# Demo Assets
+
+- Demo guide: `docs/DEMO.md`
+- Example payloads: `examples/demo_requests.json`
+- PowerShell demo runner: `scripts/demo_requests.ps1`

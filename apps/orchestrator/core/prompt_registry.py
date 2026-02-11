@@ -1,4 +1,5 @@
-from typing import Dict, List, Optional, Tuple
+﻿from typing import Dict, List, Optional, Tuple
+
 from ..models.prompt import PromptTemplate
 
 
@@ -13,50 +14,32 @@ class PromptRegistry:
                 type="code_generation",
                 version="v1",
                 role=(
-                    "당신은 프로덕션 품질의 Python 코드를 작성하는 시니어 백엔드 엔지니어입니다. "
-                    "간결하고 효율적이며 유지보수 가능한 코드를 작성합니다."
+                    "You are a senior Python engineer. Produce production-ready, readable code "
+                    "that follows the design documents and project conventions."
                 ),
                 constraints=(
-                    "CODING_RULES.md를 엄격히 따르세요. 불필요한 try/except 금지. "
-                    "입력 검증은 정말 필요한 경우에만 최소로 적용하세요. "
-                    "unsafe eval/exec 금지. 표준 라이브러리 우선 사용. "
-                    "함수/변수/클래스명은 영어, 주석은 한국어. "
-                    "주석은 필요한 경우 1줄만: '설계 컨텍스트: <문서명> - <요약>' 형식."
+                    "Follow CODING_RULES.md. Use the standard library unless a third-party dependency "
+                    "is explicitly required. Avoid unsafe eval/exec/pickle. Minimize broad try/except. "
+                    "Use clear English identifiers and concise docstrings only when necessary."
                 ),
                 output_schema=(
-                    "출력은 정확히 두 개의 코드 블록만 허용:\n"
-                    "1) 구현 코드 (python)\n"
-                    "2) 테스트 케이스 값 (json)\n\n"
-                    "중요: 코드 블록 밖에 설명, 플랜, 목록 등 일체의 텍스트를 출력하지 마세요."
+                    "Return exactly two fenced blocks and nothing else:\n"
+                    "1) Python implementation\n"
+                    "2) JSON test cases (for pytest generator)\n"
                 ),
                 template=(
                     "ROLE\n"
-                    "- 프로덕션 품질 Python 백엔드 엔지니어\n\n"
+                    "- Senior Python engineer\n\n"
                     "CONSTRAINTS\n"
-                    "- CODING_RULES.md 엄격히 준수\n"
-                    "- 보안: eval/exec/pickle 금지\n"
-                    "- 입력 검증은 최소한으로만 적용\n"
-                    "- 성능: 불필요한 O(n^2) 회피\n"
-                    "- 불필요한 try/except 금지\n"
-                    "- 타입 힌트 필수 사용\n"
-                    "- 표준 라이브러리 우선 (서드파티 최소화)\n\n"
-                    "CODE STYLE (CRITICAL)\n"
-                    "- 함수명/변수명/클래스명: 영어 (snake_case, PascalCase)\n"
-                    "- 주석: 필요한 경우 1줄만, 한국어로 '설계 컨텍스트: ...' 형식\n"
-                    "- Docstring: 필요한 경우에만 1~2줄\n"
-                    "예시:\n"
-                    "  def calculate_total(items: list) -> int:\n"
-                    "      \"\"\"총합을 계산합니다.\"\"\"\n"
-                    "      # 설계 컨텍스트: CODING_RULES.md - 표준 라이브러리 우선\n"
-                    "      return sum(items)\n\n"
-                    "OUTPUT FORMAT (STRICT - 절대 지켜야 함)\n"
-                    "코드 블록 밖에 어떤 텍스트도 출력하지 마세요.\n"
-                    "아래 형식만 정확히 따르세요:\n\n"
+                    "- Follow CODING_RULES.md\n"
+                    "- Avoid eval/exec/pickle\n"
+                    "- Prefer stdlib, keep dependencies minimal\n"
+                    "- Use English identifiers, minimal comments\n\n"
+                    "OUTPUT FORMAT (STRICT)\n"
+                    "Return only these two fenced blocks:\n\n"
                     "```python\n"
-                    "# 구현 코드 (함수/클래스명은 영어, 주석은 한국어)\n"
-                    "from typing import List\n\n"
                     "def your_function(param: str) -> str:\n"
-                    "    \"\"\"간단한 설명\"\"\"\n"
+                    "    \"\"\"Short docstring if needed.\"\"\"\n"
                     "    return param\n"
                     "```\n\n"
                     "```json\n"
@@ -67,76 +50,6 @@ class PromptRegistry:
                     "  ]\n"
                     "}}\n"
                     "```\n\n"
-                    "CONTEXT (참고할 설계 문서)\n"
-                    "{memory}\n\n"
-                    "{context}\n\n"
-                    "TASK (구현할 내용)\n"
-                    "{input}\n\n"
-                    "다시 한번 강조: 코드 블록 2개만 출력하세요. 설명, 계획, 목록 등 다른 텍스트는 절대 금지입니다."
-                ),
-                tags=["default"],
-                description="Pure code + JSON test cases, minimal comments",
-            ),
-            PromptTemplate(
-                type="refactoring",
-                version="v1",
-                role=(
-                    "당신은 코드의 동작을 보존하면서 가독성, 성능, 테스트 가능성을 개선하는 "
-                    "리팩토링 전문가입니다."
-                ),
-                constraints=(
-                    "외부 동작을 절대 변경하지 마세요. CODING_RULES.md를 따르세요. "
-                    "트레이드오프와 위험 요소를 설명하세요. "
-                    "코드는 영어로, 주석과 설명은 한국어로 작성하세요."
-                ),
-                output_schema=(
-                    "출력 형식:\n"
-                    "1) 분석 (코드 스멜, 위험 요소)\n"
-                    "2) 리팩토링 계획 (단계별)\n"
-                    "3) 변경 전후 비교\n"
-                    "4) 리팩토링된 코드 (Python 코드 블록)\n"
-                    "5) 성능 영향 분석"
-                ),
-                template=(
-                    "ROLE\n"
-                    "- 동작 보존을 최우선으로 하는 리팩토링 전문가\n\n"
-                    "PROCESS\n"
-                    "1) 코드 스멜 식별 (중복, 복잡도, 네이밍, 긴 함수 등)\n"
-                    "2) 안전한 순서로 단계별 리팩토링 계획 수립\n"
-                    "3) 변경 전후 비교 (무엇이 개선되는가)\n"
-                    "4) 성능 영향 분석 (시간/메모리 복잡도 변화)\n\n"
-                    "CODE STYLE\n"
-                    "- 함수명/변수명: 영어 (snake_case)\n"
-                    "- 주석/docstring: 한국어\n"
-                    "- 설명 텍스트: 한국어\n\n"
-                    "OUTPUT FORMAT\n"
-                    "## 1. 분석\n"
-                    "- 발견된 코드 스멜:\n"
-                    "  - [스멜 1]: 설명\n"
-                    "  - [스멜 2]: 설명\n"
-                    "- 위험 요소: ...\n\n"
-                    "## 2. 리팩토링 계획\n"
-                    "1단계: ...\n"
-                    "2단계: ...\n\n"
-                    "## 3. 변경 전후 비교\n"
-                    "Before:\n"
-                    "- 복잡도: O(...)\n"
-                    "- 문제점: ...\n"
-                    "After:\n"
-                    "- 복잡도: O(...)\n"
-                    "- 개선점: ...\n\n"
-                    "## 4. 리팩토링된 코드\n"
-                    "```python\n"
-                    "# 리팩토링된 코드 (영어 함수명, 한국어 주석)\n"
-                    "def refactored_function(param: str) -> str:\n"
-                    "    \"\"\"리팩토링된 함수 설명\"\"\"\n"
-                    "    # 개선된 로직\n"
-                    "    return result\n"
-                    "```\n\n"
-                    "## 5. 성능 영향\n"
-                    "- 시간 복잡도: O(n^2) -> O(n)\n"
-                    "- 메모리: ...\n"
-                    "- 예상 개선율: ...\n\n"
                     "CONTEXT\n"
                     "{memory}\n\n"
                     "{context}\n\n"
@@ -144,72 +57,117 @@ class PromptRegistry:
                     "{input}\n"
                 ),
                 tags=["default"],
-                description="Korean refactoring with behavior preservation, English code names",
+                description="Strict code + JSON tests, no extra text",
+            ),
+            PromptTemplate(
+                type="refactoring",
+                version="v1",
+                role=(
+                    "You are a refactoring specialist. Preserve behavior while improving readability, "
+                    "performance, and testability."
+                ),
+                constraints=(
+                    "Do not change external behavior unless explicitly requested. Follow CODING_RULES.md. "
+                    "Explain risks and tradeoffs clearly."
+                ),
+                output_schema=(
+                    "Output sections: Analysis, Refactor Plan, Before vs After, Refactored Code, Performance."
+                ),
+                template=(
+                    "ROLE\n"
+                    "- Refactoring specialist\n\n"
+                    "PROCESS\n"
+                    "1) Identify pain points and risks\n"
+                    "2) Propose staged refactor plan\n"
+                    "3) Show before/after comparison\n"
+                    "4) Provide refactored code\n"
+                    "5) Performance impact\n\n"
+                    "OUTPUT FORMAT\n"
+                    "## 1. Analysis\n"
+                    "- Issues:\n"
+                    "- Risks:\n\n"
+                    "## 2. Refactor Plan\n"
+                    "1. ...\n"
+                    "2. ...\n\n"
+                    "## 3. Before vs After\n"
+                    "Before:\n"
+                    "- Complexity: ...\n"
+                    "After:\n"
+                    "- Complexity: ...\n\n"
+                    "## 4. Refactored Code\n"
+                    "```python\n"
+                    "# Refactored implementation\n"
+                    "def refactored_function(param: str) -> str:\n"
+                    "    return param\n"
+                    "```\n\n"
+                    "## 5. Performance\n"
+                    "- Time: ...\n"
+                    "- Memory: ...\n\n"
+                    "CONTEXT\n"
+                    "{memory}\n\n"
+                    "{context}\n\n"
+                    "TASK\n"
+                    "{input}\n"
+                ),
+                tags=["default"],
+                description="Structured refactor guidance with preserved behavior",
             ),
             PromptTemplate(
                 type="code_review",
                 version="v1",
                 role=(
-                    "당신은 정확성, 보안, 성능, 가독성, 테스트 커버리지를 중점적으로 검토하는 "
-                    "시니어 코드 리뷰어입니다."
+                    "You are a senior code reviewer. Focus on security, correctness, performance, "
+                    "readability, and test gaps."
                 ),
                 constraints=(
-                    "체크리스트 기반으로 리뷰하세요. 심각도(critical/high/medium/low)를 부여하고 "
-                    "실행 가능한 수정 방안을 제시하세요. 한국어로 작성하세요."
+                    "Use severity levels: critical, high, medium, low. Provide actionable fixes."
                 ),
                 output_schema=(
-                    "출력 형식:\n"
-                    "1) 요약\n"
-                    "2) 발견 사항 (심각도, 이슈, 증거, 수정 방안)\n"
-                    "3) 테스트 부족 부분\n"
-                    "4) 최종 권장사항 (승인/변경 요청)"
+                    "Output sections: Summary, Findings by Severity, Test Gaps, Final Recommendation."
                 ),
                 template=(
                     "ROLE\n"
-                    "- 시니어 코드 리뷰어 (프로덕션 품질 기준)\n\n"
-                    "CHECKLIST (모든 항목 검토)\n"
-                    "- 보안: 입력 검증, SQL/Command Injection, 민감정보 노출, unsafe API 사용\n"
-                    "- 성능: 알고리즘 복잡도, I/O 병목, 불필요한 연산, 메모리 누수\n"
-                    "- 가독성: 함수/변수명 명확성, 코드 구조, 중복 코드, 매직 넘버\n"
-                    "- 안정성: 에러 처리, 엣지 케이스 대응, None 체크, 타입 힌트\n"
-                    "- 테스트: 누락된 테스트 케이스, flaky test 위험, 커버리지\n\n"
-                    "SEVERITY (심각도 기준)\n"
-                    "- critical: 보안 취약점 또는 데이터 손실 위험\n"
-                    "- high: 잘못된 결과 또는 심각한 성능 문제\n"
-                    "- medium: 유지보수성, 경미한 정확성 문제\n"
-                    "- low: 스타일, 사소한 개선 사항\n\n"
+                    "- Senior code reviewer\n\n"
+                    "CHECKLIST\n"
+                    "- Security: input validation, injection risks, unsafe APIs\n"
+                    "- Correctness: edge cases, error handling\n"
+                    "- Performance: complexity, I/O bottlenecks\n"
+                    "- Readability: naming, structure, duplication\n"
+                    "- Tests: missing cases, flakiness\n\n"
                     "OUTPUT FORMAT\n"
-                    "## 1. 요약\n"
-                    "전체적인 코드 품질 평가 (2-3문장)\n\n"
-                    "## 2. 발견 사항\n"
-                    "### [CRITICAL] 이슈 제목\n"
-                    "- **문제점**: 구체적인 설명\n"
-                    "- **증거**: 코드 라인 또는 예시\n"
-                    "- **수정 방안**: 실행 가능한 해결책\n\n"
-                    "### [HIGH] 이슈 제목\n"
-                    "- **문제점**: ...\n"
-                    "- **증거**: ...\n"
-                    "- **수정 방안**: ...\n\n"
-                    "(심각도 순으로 모든 이슈 나열)\n\n"
-                    "## 3. 테스트 부족 부분\n"
-                    "- 누락된 테스트 케이스 1: ...\n"
-                    "- 누락된 테스트 케이스 2: ...\n\n"
-                    "## 4. 최종 권장사항\n"
-                    "**결정**: ✅ 승인 | ⚠️ 변경 요청\n"
-                    "**이유**: ...\n\n"
-                    "EXAMPLE (참고용)\n"
-                    "### [CRITICAL] SQL Injection 취약점\n"
-                    "- **문제점**: 사용자 입력을 직접 SQL 쿼리에 삽입\n"
-                    "- **증거**: `query = f\"SELECT * FROM users WHERE name = '{user_input}'\"`\n"
-                    "- **수정 방안**: Parameterized query 사용 `cursor.execute(\"SELECT * FROM users WHERE name = ?\", (user_input,))`\n\n"
+                    "## 1. Summary\n"
+                    "Overall assessment in 2-3 sentences.\n\n"
+                    "## 2. Findings\n"
+                    "### [CRITICAL] Title\n"
+                    "- Issue:\n"
+                    "- Evidence:\n"
+                    "- Fix:\n\n"
+                    "### [HIGH] Title\n"
+                    "- Issue:\n"
+                    "- Evidence:\n"
+                    "- Fix:\n\n"
+                    "### [MEDIUM] Title\n"
+                    "- Issue:\n"
+                    "- Evidence:\n"
+                    "- Fix:\n\n"
+                    "### [LOW] Title\n"
+                    "- Issue:\n"
+                    "- Evidence:\n"
+                    "- Fix:\n\n"
+                    "## 3. Test Gaps\n"
+                    "- Missing case 1\n"
+                    "- Missing case 2\n\n"
+                    "## 4. Final Recommendation\n"
+                    "Decision: approve | request changes\n"
+                    "Rationale: ...\n\n"
                     "CONTEXT\n"
                     "{memory}\n\n"
                     "{context}\n\n"
-                    "TASK (리뷰할 코드)\n"
+                    "TASK\n"
                     "{input}\n"
                 ),
                 tags=["default"],
-                description="Korean code review with severity levels and actionable fixes",
+                description="Severity-based review with actionable fixes",
             ),
         ]
         for prompt in defaults:

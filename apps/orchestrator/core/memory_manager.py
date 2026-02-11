@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,9 +22,13 @@ def _normalize(text: str) -> str:
 def _safe_project_id(project_id: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_.-]+", "_", project_id) or "default"
 
+def _stable_context_id(normalized: str) -> str:
+    digest = hashlib.sha1(normalized.encode("utf-8")).hexdigest()[:12]
+    return f"ctx_{digest}"
+
 
 def _extract_source(text: str, default_source: str) -> tuple[str, str]:
-    match = re.match(r"^\\[(.+?)\\]\\s+(.*)$", text.strip(), re.DOTALL)
+    match = re.match(r"^\[(.+?)\]\s+(.*)$", text.strip(), re.DOTALL)
     if match:
         source = match.group(1).strip()
         content = match.group(2).strip()
@@ -88,7 +93,7 @@ class MemoryManager:
             entry = state.entries.get(key)
             if not entry:
                 entry = _MemoryEntry(
-                    id=f"ctx_{abs(hash(key))}",
+                    id=_stable_context_id(key),
                     content=cleaned,
                     source=src,
                     first_seen=now,

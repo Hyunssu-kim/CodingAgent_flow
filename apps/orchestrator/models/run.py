@@ -15,3 +15,5 @@ class RunResponse(BaseModel):
     memory_snapshot: str
     retrieved_context: List[str]
     quality_report: QualityReport
+    run_id: Optional[str] = None
+    duration_ms: Optional[int] = None

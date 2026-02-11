@@ -23,10 +23,11 @@ def _run_cmd(args: List[str], cwd: str) -> subprocess.CompletedProcess:
 
 
 def _parse_coverage_report(report_text: str, target_file: str) -> Dict[str, Any]:
+    report_text = _strip_ansi(report_text)
     coverage_percent: Optional[float] = None
     missing_lines: List[str] = []
 
-    line_re = re.compile(r"^(.+?)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)%\\s*(.*)$")
+    line_re = re.compile(r"^(.+?)\s+(\d+)\s+(\d+)\s+(\d+)%\s*(.*)$")
     for line in report_text.splitlines():
         m = line_re.match(line.strip())
         if not m:
@@ -42,6 +43,10 @@ def _parse_coverage_report(report_text: str, target_file: str) -> Dict[str, Any]
         "coverage_percent": coverage_percent,
         "missing_lines": missing_lines,
     }
+
+
+def _strip_ansi(text: str) -> str:
+    return re.sub(r"\x1b\[[0-9;]*m", "", text or "")
 
 
 def run_coverage(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -63,12 +68,6 @@ def run_coverage(payload: Dict[str, Any]) -> Dict[str, Any]:
             "status": "error",
             "detail": {"message": "empty code payload"},
         }
-    if not tests.strip():
-        return {
-            "status": "skipped",
-            "detail": {"message": "no tests provided"},
-        }
-
     with tempfile.TemporaryDirectory() as tmpdir:
         code_name = "app.py"
         test_name = "test_generated.py"
@@ -76,13 +75,18 @@ def run_coverage(payload: Dict[str, Any]) -> Dict[str, Any]:
         test_path = f"{tmpdir}/{test_name}"
         with open(code_path, "w", encoding="utf-8") as f:
             f.write(code)
-        test_code, test_err = generate_pytest_from_cases(tests)
-        if test_err:
-            return {"status": "error", "detail": {"message": test_err}}
-        if not test_code.strip():
-            return {"status": "skipped", "detail": {"message": "no test cases generated"}}
-        with open(test_path, "w", encoding="utf-8") as f:
-            f.write(test_code)
+        if tests.strip():
+            test_code, test_err = generate_pytest_from_cases(tests)
+            if test_err:
+                return {"status": "error", "detail": {"message": test_err}}
+            if not test_code.strip():
+                return {"status": "skipped", "detail": {"message": "no test cases generated"}}
+            with open(test_path, "w", encoding="utf-8") as f:
+                f.write(test_code)
+            pytest_target = test_path
+        else:
+            # Fall back to running pytest on the provided code file.
+            pytest_target = code_path
 
         run_args = [
             sys.executable,
@@ -93,7 +97,7 @@ def run_coverage(payload: Dict[str, Any]) -> Dict[str, Any]:
             "pytest",
             "-q",
             "--disable-warnings",
-            test_path,
+            pytest_target,
         ]
         run_proc = _run_cmd(run_args, tmpdir)
 

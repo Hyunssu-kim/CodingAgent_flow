@@ -1,0 +1,26 @@
+﻿[
+  {
+    "name": "code_generation",
+    "payload": {
+      "task_type": "code_generation",
+      "project_id": "portfolio-demo",
+      "user_input": "Implement a safe file reader that loads UTF-8 text and rejects paths outside a base directory."
+    }
+  },
+  {
+    "name": "refactoring",
+    "payload": {
+      "task_type": "refactoring",
+      "project_id": "portfolio-demo",
+      "user_input": "Refactor the following function to improve readability and error handling:\n\n```python\nfrom typing import Dict\n\n\ndef normalize(data: Dict) -> Dict:\n    for k in list(data.keys()):\n        if data[k] is None:\n            del data[k]\n        else:\n            data[k] = str(data[k]).strip()\n    return data\n```"
+    }
+  },
+  {
+    "name": "code_review",
+    "payload": {
+      "task_type": "code_review",
+      "project_id": "portfolio-demo",
+      "user_input": "Review this code for security and correctness issues:\n\n```python\nimport sqlite3\n\ndef find_user(db_path: str, name: str):\n    conn = sqlite3.connect(db_path)\n    cur = conn.cursor()\n    query = f\"SELECT * FROM users WHERE name = '{name}'\"\n    return cur.execute(query).fetchall()\n```"
+    }
+  }
+]

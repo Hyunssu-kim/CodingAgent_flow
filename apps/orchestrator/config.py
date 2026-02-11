@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     # Vector DB
     vector_db_path: str = Field(default="./data/vectordb")
 
+    # Run Store
+    run_store_path: str = Field(default="./data/run_store.json")
+    run_store_limit: int = Field(default=200, ge=10, le=5000)
+
     # LLM
     llm_provider: Literal["gemini", "stub"] = Field(default="gemini")
     llm_model: str = Field(default="gemini-2.5-flash")

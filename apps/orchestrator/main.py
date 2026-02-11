@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .api.run import router as run_router
+from .api.runs import router as runs_router
 from .api.prompts import router as prompts_router
 from .api.memory import router as memory_router
 
@@ -18,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(run_router)
+app.include_router(runs_router)
 app.include_router(prompts_router)
 app.include_router(memory_router)
 
